@@ -21,7 +21,7 @@ connection.connect(function(err) {
 
 //Show all items in the products Table
 function showProducts() {
-    var query = connection.query("SELECT * FROM products", function(err,res) {
+    connection.query("SELECT * FROM products", function(err,res) {
         if (err) throw err;
         // console.log(res);
         for (var i = 0; i < res.length; i++) {
@@ -56,37 +56,40 @@ function start() {
         });
 } //end of function
 
+function buySomething() {
+    connection.query("SELECT * FROM products", function(err, res) {
+        if (err) throw err;
+        inquirer
+        .prompt([
+            {
+                name: "productID",
+                type: "input",
+                message: "Enter Product ID: "
+            },
+            {
+                name: "units",
+                type: "input",
+                message: "How many units do you want to purchase? "
+            }
+    ])
+    .then(function(answer) {
 
-// //{
-//     name: "units",
-//     type: "input",
-//     message: "How many units do you want to purchase: "
-// },
-// {
-//     name: "exit",
-//     type: "input",
-//     message: "Exit application "
-// }      
+        for(var i = 0; i < res.length; i++) {
+            if( (parseInt(res[i].item_id) === parseInt(answer.productID)) && (parseInt(res[i].stock_quantity) > 0) ) {
+                    //do something
+            }
+            else {
+                console.log("We don't carry that item or we don't have enough units in stock");
+                //connection.end();
+                start();
+            }
+        }
 
-
-    // .prompt({
-    //     name: "action",
-    //     type: "list",
-    //     message: "Please select an option below:",
-    //     choices: [
-    //         "ID of Product",
-    //         "How many units",
-    //         "Exit"
-    //     ]
-    // })
-    // .then(function(user) {
-    //     switch(user.action) {
-    //         case "ID of Product"
-    //     }
-
-    // });
-
-
-
+        //console.log(results);
 
 
+
+    }); //end promise
+
+});//end query
+} //end of function
