@@ -105,7 +105,10 @@ function buySomething() {
                     console.log("Stock Updated");
                     start();
                   }
-            ); //end Update SQL 
+            ); //end Update SQL
+            
+            var customerPrice = parseInt(productChoice.price) * parseInt(answer.units);
+            console.log(`You ordered ${answer.units} units of ${productChoice.product_name} and your total cost for these items is $${customerPrice}`);
         } //end if statement
                 
         else {
