@@ -73,23 +73,49 @@ function buySomething() {
             }
     ])
     .then(function(answer) {
+        
+        var productChoice;
 
-        for(var i = 0; i < res.length; i++) {
-            if( (parseInt(res[i].item_id) === parseInt(answer.productID)) && (parseInt(res[i].stock_quantity) > 0) ) {
-                    //do something
-            }
-            else {
-                console.log("We don't carry that item or we don't have enough units in stock");
-                //connection.end();
-                start();
+        for (var i = 0; i < res.length; i++) {
+            if( parseInt(res[i].item_id) === parseInt(answer.productID)  ) {
+             // if there is a match on the item_id's, store the result from the db here to look at later
+                productChoice = res[i];                    
             }
         }
 
-        //console.log(results);
+        //check stock levels in db
+        if (parseInt(productChoice.stock_quantity) > parseInt(answer.units)) {
 
+            var stockUpdate = productChoice.stock_quantity - answer.units;
 
+            connection.query(
+                "UPDATE products SET ? WHERE ?",
+                [
+                    {
+                        stock_quantity: stockUpdate
 
+                    },
+                    {
+                        item_id: productChoice.item_id
+
+                    }
+                ],
+                function(error) {
+                    if (error) throw err;
+                    console.log("Stock Updated");
+                    start();
+                  }
+            ); //end Update SQL 
+        } //end if statement
+                
+        else {
+            console.log("Out of Stock");
+            //connection.end();
+            start();
+        }
     }); //end promise
 
-});//end query
+});//end SELECT SQL
 } //end of function
+
+//&& (parseInt(res[i].stock_quantity) > 0)
