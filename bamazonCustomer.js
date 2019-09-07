@@ -12,16 +12,16 @@ var connection = mysql.createConnection({
 });
 
 /* Connect to bamazon_db */
-connection.connect(function(err) {
+connection.connect(function (err) {
     if (err) throw err;
     //console.log(`Connected as ${connection.threadId}`);
     showProducts();
     //buySomething();
 });
 
-//Show all items in the products Table
-function showProducts() {
-    connection.query("SELECT * FROM products", function(err,res) {
+
+function showProducts(someArg) {
+    connection.query("SELECT * FROM products", function (err, res) {
         if (err) throw err;
         // console.log(res);
         for (var i = 0; i < res.length; i++) {
@@ -44,10 +44,10 @@ function start() {
                 type: "list",
                 message: "Would you like to purchase or EXIT",
                 choices: ["Purchase", "EXIT"]
-            }            
+            }
         )
-        .then(function(answer) {
-            if(answer.BuyorExit === "Purchase") {
+        .then(function (answer) {
+            if (answer.BuyorExit === "Purchase") {
                 buySomething();
             }
             else {
@@ -57,68 +57,66 @@ function start() {
 } //end of function
 
 function buySomething() {
-    connection.query("SELECT * FROM products", function(err, res) {
+    connection.query("SELECT * FROM products", function (err, res) {
         if (err) throw err;
         inquirer
-        .prompt([
-            {
-                name: "productID",
-                type: "input",
-                message: "Enter Product ID: "
-            },
-            {
-                name: "units",
-                type: "input",
-                message: "How many units do you want to purchase? "
-            }
-    ])
-    .then(function(answer) {
-        
-        var productChoice;
+            .prompt([
+                {
+                    name: "productID",
+                    type: "input",
+                    message: "Enter Product ID: "
+                },
+                {
+                    name: "units",
+                    type: "input",
+                    message: "How many units do you want to purchase? "
+                }
+            ])
+            .then(function (answer) {
 
-        for (var i = 0; i < res.length; i++) {
-            if( parseInt(res[i].item_id) === parseInt(answer.productID)  ) {
-             // if there is a match on the item_id's, store the result from the db here to look at later
-                productChoice = res[i];                    
-            }
-        }
+                var productChoice;
 
-        //check stock levels in db
-        if (parseInt(productChoice.stock_quantity) > parseInt(answer.units)) {
-
-            var stockUpdate = productChoice.stock_quantity - answer.units;
-
-            connection.query(
-                "UPDATE products SET ? WHERE ?",
-                [
-                    {
-                        stock_quantity: stockUpdate
-
-                    },
-                    {
-                        item_id: productChoice.item_id
-
+                for (var i = 0; i < res.length; i++) {
+                    if (parseInt(res[i].item_id) === parseInt(answer.productID)) {
+                        // if there is a match on the item_id's, store the result from the db here to look at later
+                        productChoice = res[i];
                     }
-                ],
-                function(error) {
-                    if (error) throw err;
-                    console.log("Stock Updated");
+                }
+
+                //check stock levels in db
+                if (parseInt(productChoice.stock_quantity) >= parseInt(answer.units)) {
+
+                    var stockUpdate = productChoice.stock_quantity - answer.units;
+
+                    connection.query(
+                        "UPDATE products SET ? WHERE ?",
+                        [
+                            {
+                                stock_quantity: stockUpdate
+
+                            },
+                            {
+                                item_id: productChoice.item_id
+
+                            }
+                        ],
+                        function (error) {
+                            if (error) throw err;
+                            console.log("Stock Updated");
+                            start();
+                        }
+                    ); //end Update SQL
+
+                    var customerPrice = parseInt(productChoice.price) * parseInt(answer.units);
+                    console.log(`You ordered ${answer.units} units of ${productChoice.product_name} and your total cost for these items is $${customerPrice}`);
+                } //end if statement
+
+                else {
+                    console.log("Out of Stock");
+                    //connection.end();
                     start();
-                  }
-            ); //end Update SQL
-            
-            var customerPrice = parseInt(productChoice.price) * parseInt(answer.units);
-            console.log(`You ordered ${answer.units} units of ${productChoice.product_name} and your total cost for these items is $${customerPrice}`);
-        } //end if statement
-                
-        else {
-            console.log("Out of Stock");
-            //connection.end();
-            start();
-        }
-    }); //end promise
+                }
+            }); //end promise
 
-});//end SELECT SQL
+    });//end SELECT SQL
 } //end of function
-
-//&& (parseInt(res[i].stock_quantity) > 0)
