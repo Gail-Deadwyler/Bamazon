@@ -1,3 +1,12 @@
+/**
+ * Programming assignment:  Bamazon
+ * Developer:               Gail Deadwyler
+ * Date Written:            9/7/19
+ * Purpose:                 Bamazon is a command line node app that creates an Amazon-like storefront that takes in orders from customers 
+ *                          and depletes stock from the store's inventory 
+ *                          
+ */
+
 /* grab needed npm packages */
 var mysql = require("mysql");
 var inquirer = require("inquirer");
@@ -13,10 +22,8 @@ var connection = mysql.createConnection({
 
 /* Connect to bamazon_db */
 connection.connect(function (err) {
-    if (err) throw err;
-    //console.log(`Connected as ${connection.threadId}`);
-    showProducts();
-    //buySomething();
+    if (err) throw err;    
+    showProducts();    
 });
 
 
@@ -27,16 +34,12 @@ function showProducts(someArg) {
         for (var i = 0; i < res.length; i++) {
             console.log("Product ID: " + res[i].item_id + " ||" + " Product Name: " + res[i].product_name + " ||" + " Price: $" + parseInt(res[i].price));
         }
-        //console.log(`Query that is run: ${query.sql}`);
-        //console.log("type of price is " + typeof(res[0].price));
         start();
     });
-
 }
 
-//Ask user what they want to do
-function start() {
-    //console.log("Enter your selection");
+/* Ask user what they want to do - Purchase or Exit the app */
+function start() {    
     inquirer
         .prompt(
             {
@@ -54,8 +57,11 @@ function start() {
                 connection.end();
             }
         });
-} //end of function
+} /*end of function*/
 
+
+/* Updates the products table if there is sufficient stock and displays total price */
+/* Otherwise, display out of stock */
 function buySomething() {
     connection.query("SELECT * FROM products", function (err, res) {
         if (err) throw err;
@@ -78,12 +84,12 @@ function buySomething() {
 
                 for (var i = 0; i < res.length; i++) {
                     if (parseInt(res[i].item_id) === parseInt(answer.productID)) {
-                        // if there is a match on the item_id's, store the result from the db here to look at later
+                        /* if there is a match on the item_id's, store the result from the db to look at later */
                         productChoice = res[i];
                     }
                 }
 
-                //check stock levels in db
+                /* check stock levels in db */
                 if (parseInt(productChoice.stock_quantity) >= parseInt(answer.units)) {
 
                     var stockUpdate = productChoice.stock_quantity - answer.units;
@@ -105,18 +111,17 @@ function buySomething() {
                             console.log("Stock Updated");
                             start();
                         }
-                    ); //end Update SQL
+                    ); /* end Update SQL */
 
                     var customerPrice = parseInt(productChoice.price) * parseInt(answer.units);
                     console.log(`You ordered ${answer.units} units of ${productChoice.product_name} and your total cost for these items is $${customerPrice}`);
-                } //end if statement
+                } /* end if statement */
 
                 else {
-                    console.log("Out of Stock");
-                    //connection.end();
+                    console.log("Out of Stock");                    
                     start();
                 }
-            }); //end promise
+            }); /* end promise */
 
-    });//end SELECT SQL
-} //end of function
+    }); /* end SELECT SQL */
+} /* end of function */
