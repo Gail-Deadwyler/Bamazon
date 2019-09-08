@@ -11,8 +11,8 @@ The available products for sale is shown to the customer. If customer types: Exi
 ## Technologies used: 
 Node.js  
 JavaScript ES5   
-npm packages (mysql and inquirer)
-MySQL Workbench
+npm packages (mysql and inquirer)  
+MySQL Workbench  
 MySQL server
 
 ## My role in app development
